@@ -5,6 +5,7 @@ void TaskReadLDR(void *pvParameters);       // Task Lectura de intensidad Lumini
 void TaskSendLDR(void *pvParameters);       // Task Envio de intensidad Luminica
 void TaskControlButton(void *pvParameters); // Task control de boton
 void TaskStatusLed(void *pvParameters);     // Task Parpadeo led 11
+void TaskAlarm800(void *pvParameters);      // Task Alarma LDR > 800
 void buttonISR();
 
 // controlador del semaforo mutex del puerto serial
@@ -15,6 +16,7 @@ SemaphoreHandle_t xBotonSemaphore;
 
 // variable de estado para saber si esta activa la lectura del LDR
 volatile bool lecturaActivada = false;
+volatile bool alarmaActivada = false;
 
 // varible global del valorLDR
 volatile int valorLDR = 0;
@@ -69,6 +71,14 @@ void setup()
         NULL,
         2,
         NULL);
+
+    xTaskCreate(
+        TaskAlarm800,
+        "Alarma_800",
+        128,
+        NULL,
+        2,
+        NULL);
 }
 
 void loop()
@@ -91,6 +101,20 @@ void TaskReadLDR(void *pvParameters)
         {
             const int valorLDR_now = analogRead(A3);
             valorLDR = valorLDR_now;
+            if ((valorLDR >= 800) && (alarmaActivada == false))
+            {
+                alarmaActivada = true;
+                // Trata de tomar el semaforo por 5 ticks
+                if (xSemaphoreTake(xSerialSemaphore, (TickType_t)5) == pdTRUE)
+                {
+                    Serial.println("=== ALARMA ACTIVADA ===");
+                    xSemaphoreGive(xSerialSemaphore); // Liberamos el semaforo
+                }
+            }
+        }
+        else
+        {
+            alarmaActivada = false;
         }
 
         vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
@@ -162,11 +186,36 @@ void TaskStatusLed(void *pvParameters)
         if (lecturaActivada == true)
         {
             digitalWrite(11, HIGH);
-            vTaskDelay(200 / portTICK_PERIOD_MS); // 200 ms
+            vTaskDelay(500 / portTICK_PERIOD_MS); // 500 ms
             digitalWrite(11, LOW);
-            vTaskDelay(200 / portTICK_PERIOD_MS); // 200 ms
+            vTaskDelay(500 / portTICK_PERIOD_MS); // 500 ms
         }
         digitalWrite(11, LOW);
+        vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+    }
+}
+
+void TaskAlarm800(void *pvParameters)
+{
+    (void)pvParameters;
+
+    // Init pines
+    pinMode(12, OUTPUT);
+
+    // for loop
+    for (;;)
+    {
+
+        if (alarmaActivada == true)
+        {
+
+            // Parpadeo 0.1 seg led 12
+            digitalWrite(12, HIGH);
+            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+            digitalWrite(12, LOW);
+            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+        }
+
         vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
     }
 }
