@@ -1,9 +1,10 @@
 #include <Arduino_FreeRTOS.h>
-#include <semphr.h>
+#include <semphr.h> // Librería específica para usar Semáforos y Mutex
 
 void TaskReadLDR(void *pvParameters);       // Task Lectura de intensidad Luminica
 void TaskSendLDR(void *pvParameters);       // Task Envio de intensidad Luminica
 void TaskControlButton(void *pvParameters); // Task control de boton
+void TaskStatusLed(void *pvParameters);     // Task Parpadeo led 11
 void buttonISR();
 
 // controlador del semaforo mutex del puerto serial
@@ -59,6 +60,14 @@ void setup()
         128,
         NULL,
         3,
+        NULL);
+
+    xTaskCreate(
+        TaskStatusLed,
+        "Led11_Parpadeo",
+        128,
+        NULL,
+        2,
         NULL);
 }
 
@@ -136,6 +145,29 @@ void TaskControlButton(void *pvParameters)
 
             vTaskDelay(200 / portTICK_PERIOD_MS); // 50 ms
         }
+    }
+}
+
+void TaskStatusLed(void *pvParameters)
+{
+    (void)pvParameters;
+
+    // Init pines
+    pinMode(11, OUTPUT);
+
+    // for loop
+    for (;;)
+    {
+
+        if (lecturaActivada == true)
+        {
+            digitalWrite(11, HIGH);
+            vTaskDelay(200 / portTICK_PERIOD_MS); // 200 ms
+            digitalWrite(11, LOW);
+            vTaskDelay(200 / portTICK_PERIOD_MS); // 200 ms
+        }
+        digitalWrite(11, LOW);
+        vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
     }
 }
 
