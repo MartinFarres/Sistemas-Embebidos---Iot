@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# FastAPI / Uvicorn
+*.pid
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arduino / PlatformIO / build artifacts
+.pio/
+.pioenvs/
+.piolibdeps/
+.build/
+build/
+dist/
+
+# Arduino IDE (common)
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.a
+*.d
+*.eep
+*.lst
+
+# Serial captures / data
+*.csv
+*.txt
+
+# Secrets / local config
+.env
+.env.*
+secrets.*
+config.local.*

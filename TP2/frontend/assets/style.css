@@ -579,3 +579,57 @@ input.slider::-moz-range-thumb {
     font-size: 0.78rem;
   }
 }
+
+/* ── LED indicators ──────────────────────── */
+.led-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
+.led-indicator.led-green {
+  background: #1a3a2a;
+  border: 2px solid #10b981;
+}
+.led-indicator.led-green.on {
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green), 0 0 24px var(--green);
+}
+
+.led-indicator.led-red {
+  background: #3a1a1a;
+  border: 2px solid var(--red);
+}
+.led-indicator.led-red.on {
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red), 0 0 24px var(--red);
+}
+.led-indicator.led-red.blink {
+  animation: blink-red 0.6s ease-in-out infinite;
+}
+
+@keyframes blink-red {
+  0%, 100% { background: var(--red); box-shadow: 0 0 10px var(--red), 0 0 24px var(--red); }
+  50%      { background: #3a1a1a;    box-shadow: none; }
+}
+
+/* ── Alarm badge ─────────────────────────── */
+.alarm-badge {
+  display: inline-block;
+  padding: 0.3em 0.9em;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  transition: all 0.3s;
+}
+.alarm-badge.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}

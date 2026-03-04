@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arduino LED Controller</title>
+  <title>Arduino LDR Monitor</title>
   <link rel="stylesheet" href="/assets/style.css" />
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
@@ -14,8 +14,8 @@
       <header>
         <div class="header-top">
           <div>
-            <h1>Arduino LED Controller</h1>
-            <p class="subtitle">Control your LEDs in real time</p>
+            <h1>Arduino LDR Monitor</h1>
+            <p class="subtitle">TP2 — Light sensor alarm system</p>
           </div>
           <button class="theme-btn" @click="toggleTheme" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
             <svg v-if="darkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -25,44 +25,6 @@
       </header>
 
       <div class="grid">
-        <!-- LED Sliders -->
-        <section class="card">
-          <h2>PWM LED Brightness</h2>
-          <div class="slider-group" v-for="led in pwmLeds" :key="led.key">
-            <div class="slider-header">
-              <label>{{ led.label }}</label>
-              <span class="value-badge" :style="{ background: led.color }">{{ led.value }}</span>
-            </div>
-            <div class="slider-track" :style="sliderTrackStyle(led)">
-              <input
-                type="range"
-                min="0"
-                max="255"
-                v-model.number="led.value"
-                @input="sendLedValues"
-                class="slider"
-              />
-            </div>
-          </div>
-        </section>
-
-        <!-- LED 13 Toggle -->
-        <section class="card">
-          <h2>Digital LED</h2>
-          <div class="toggle-row">
-            <span class="toggle-label">LED 13</span>
-            <button
-              class="toggle-btn"
-              :class="{ active: led13 }"
-              @click="toggleLed13"
-            >
-              <span class="toggle-knob"></span>
-              <span class="toggle-text">{{ led13 ? 'ON' : 'OFF' }}</span>
-            </button>
-            <div class="led-indicator" :class="{ on: led13 }"></div>
-          </div>
-        </section>
-
         <!-- LDR Sensor -->
         <section class="card sensor-card">
           <h2>LDR Sensor</h2>
@@ -75,7 +37,36 @@
           <div class="sensor-bar-container">
             <div class="sensor-bar" :style="{ width: sensorPercent + '%' }"></div>
           </div>
-          <p class="sensor-info">Updates every 5 seconds &mdash; {{ sensorPercent }}%</p>
+          <p class="sensor-info">Auto-refresh &mdash; {{ sensorPercent }}%</p>
+        </section>
+
+        <!-- Toggle Lectura -->
+        <section class="card">
+          <h2>Lectura Control</h2>
+          <div class="toggle-row">
+            <span class="toggle-label">Lectura Activa</span>
+            <button
+              class="toggle-btn"
+              :class="{ active: lecturaActiva }"
+              @click="toggleLectura"
+            >
+              <span class="toggle-knob"></span>
+              <span class="toggle-text">{{ lecturaActiva ? 'ON' : 'OFF' }}</span>
+            </button>
+            <div class="led-indicator led-green" :class="{ on: lecturaActiva }"></div>
+          </div>
+        </section>
+
+        <!-- Alarm Status -->
+        <section class="card">
+          <h2>Alarm Status</h2>
+          <div class="toggle-row">
+            <span class="toggle-label">Alarma</span>
+            <span class="alarm-badge" :class="{ active: alarma }">
+              {{ alarma ? 'ACTIVE' : 'OFF' }}
+            </span>
+            <div class="led-indicator led-red" :class="{ on: alarma, blink: alarma }"></div>
+          </div>
         </section>
       </div>
 

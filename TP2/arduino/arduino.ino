@@ -6,6 +6,7 @@ void TaskSendLDR(void *pvParameters);       // Task Envio de intensidad Luminica
 void TaskControlButton(void *pvParameters); // Task control de boton
 void TaskStatusLed(void *pvParameters);     // Task Parpadeo led 11
 void TaskAlarm800(void *pvParameters);      // Task Alarma LDR > 800
+void TaskReceiveSerial(void *pvParameters); // Task Recibir toggle del servidor
 void buttonISR();
 
 // controlador del semaforo mutex del puerto serial
@@ -27,7 +28,6 @@ void setup()
 
     // Boton para frenar la lectura y envio de valor del sensor LDR
     pinMode(2, INPUT);
-    attachInterrupt(digitalPinToInterrupt(2), buttonISR, RISING);
 
     if (xBotonSemaphore == NULL)
     {
@@ -40,45 +40,14 @@ void setup()
     }
 
     // seteamos las tareas ---------------------
-    xTaskCreate(
-        TaskReadLDR,
-        "Lectura_LDR",
-        128,
-        NULL,
-        2,
-        NULL);
+    xTaskCreate(TaskReadLDR, "Lectura", 80, NULL, 2, NULL);
+    xTaskCreate(TaskSendLDR, "Envio", 90, NULL, 2, NULL);
+    xTaskCreate(TaskControlButton, "Boton", 80, NULL, 3, NULL);
+    xTaskCreate(TaskStatusLed, "Led11", 70, NULL, 2, NULL);
+    xTaskCreate(TaskAlarm800, "Led12", 70, NULL, 2, NULL);
+    xTaskCreate(TaskReceiveSerial, "Recibir", 80, NULL, 2, NULL);
 
-    xTaskCreate(
-        TaskSendLDR,
-        "Envio_LDR",
-        128,
-        NULL,
-        2,
-        NULL);
-
-    xTaskCreate(
-        TaskControlButton,
-        "Control_Boton",
-        128,
-        NULL,
-        3,
-        NULL);
-
-    xTaskCreate(
-        TaskStatusLed,
-        "Led11_Parpadeo",
-        128,
-        NULL,
-        2,
-        NULL);
-
-    xTaskCreate(
-        TaskAlarm800,
-        "Alarma_800",
-        128,
-        NULL,
-        2,
-        NULL);
+    attachInterrupt(digitalPinToInterrupt(2), buttonISR, RISING);
 }
 
 void loop()
@@ -129,8 +98,13 @@ void TaskSendLDR(void *pvParameters)
     for (;;)
     {
 
-        char bufferLDR[5];                    // longitud del buffer de 4 chars
-        sprintf(bufferLDR, "%04d", valorLDR); // rellena con ceros a la izquierda
+        char bufferLDR[5];
+        int tempVal = valorLDR;
+        bufferLDR[0] = (tempVal / 1000) + '0';
+        bufferLDR[1] = ((tempVal / 100) % 10) + '0';
+        bufferLDR[2] = ((tempVal / 10) % 10) + '0';
+        bufferLDR[3] = (tempVal % 10) + '0';
+        bufferLDR[4] = '\0'; // Fin de cadena
 
         // Trata de tomar el semaforo por 5 ticks
         if (xSemaphoreTake(xSerialSemaphore, (TickType_t)5) == pdTRUE)
@@ -190,33 +164,56 @@ void TaskStatusLed(void *pvParameters)
             digitalWrite(11, LOW);
             vTaskDelay(500 / portTICK_PERIOD_MS); // 500 ms
         }
-        digitalWrite(11, LOW);
-        vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+        else
+        {
+            digitalWrite(11, LOW);
+            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+        }
     }
 }
 
 void TaskAlarm800(void *pvParameters)
 {
     (void)pvParameters;
-
-    // Init pines
     pinMode(12, OUTPUT);
 
-    // for loop
     for (;;)
     {
-
         if (alarmaActivada == true)
         {
-
-            // Parpadeo 0.1 seg led 12
             digitalWrite(12, HIGH);
-            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+            vTaskDelay(50 / portTICK_PERIOD_MS);
             digitalWrite(12, LOW);
-            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+        else
+        {
+            digitalWrite(12, LOW);
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+    }
+}
+void TaskReceiveSerial(void *pvParameters)
+{
+    (void)pvParameters;
+
+    for (;;)
+    {
+        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE)
+        {
+
+            if (Serial.available() > 0)
+            {
+                char req = Serial.read();
+                if (req == 'T')
+                {
+                    xSemaphoreGive(xBotonSemaphore);
+                }
+            }
+            xSemaphoreGive(xSerialSemaphore);
         }
 
-        vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+        vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
 

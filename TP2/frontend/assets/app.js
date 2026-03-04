@@ -1,139 +1,100 @@
-const API_BASE = window.location.origin;
-
 const { createApp, ref, computed, onMounted, onUnmounted } = Vue;
 
 createApp({
   setup() {
-    // ── Theme ──
-    const darkMode = ref(true);
+    /* ---- state ---- */
+    const ldrValue      = ref(0);
+    const alarma        = ref(false);
+    const lecturaActiva = ref(false);
+    const statusMessage = ref('Connecting...');
+    const statusClass   = ref('info');
+    const darkMode      = ref(true);
+    let pollTimer       = null;
 
-    function toggleTheme() {
-      darkMode.value = !darkMode.value;
-      document.documentElement.setAttribute(
-        "data-theme",
-        darkMode.value ? "dark" : "light"
-      );
-      localStorage.setItem("theme", darkMode.value ? "dark" : "light");
-    }
-
-    // Restore saved theme
-    const saved = localStorage.getItem("theme");
-    if (saved === "light") {
-      darkMode.value = false;
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-
-    // ── State ──
-    const pwmLeds = ref([
-      { key: "led9",  label: "LED 9 (PWM)",  value: 0, color: "#f43f5e" },
-      { key: "led10", label: "LED 10 (PWM)", value: 0, color: "#3b82f6" },
-      { key: "led11", label: "LED 11 (PWM)", value: 0, color: "#10b981" },
-    ]);
-
-    const led13 = ref(false);
-    const ldrValue = ref(0);
-    const statusMessage = ref("Connecting...");
-    const statusClass = ref("info");
-
-    let ldrInterval = null;
-    let sendTimeout = null;
-
-    // ── Computed ──
-    const sensorPercent = computed(() =>
-      Math.round((ldrValue.value / 1023) * 100)
-    );
+    /* ---- computed ---- */
+    const sensorPercent = computed(() => Math.min(100, Math.round((ldrValue.value / 1023) * 100)));
 
     const sensorRingStyle = computed(() => {
       const pct = sensorPercent.value;
-      const trackBg = darkMode.value ? "#1e1b3a" : "#ddd6fe";
-      return {
-        background: `conic-gradient(var(--accent) ${pct * 3.6}deg, ${trackBg} ${pct * 3.6}deg)`,
-      };
+      const deg = Math.round((pct / 100) * 360);
+      return { background: `conic-gradient(var(--accent) ${deg}deg, var(--border) ${deg}deg)` };
     });
 
-    // ── Methods ──
-    function sliderTrackStyle(led) {
-      const pct = (led.value / 255) * 100;
-      return {
-        background: `linear-gradient(to right, ${led.color} ${pct}%, var(--border) ${pct}%)`,
-      };
-    }
-
-    function buildPayload() {
-      const payload = { led13: led13.value ? 1 : 0 };
-      pwmLeds.value.forEach((l) => (payload[l.key] = l.value));
-      return payload;
-    }
-
-    // Debounced send
-    function sendLedValues() {
-      clearTimeout(sendTimeout);
-      sendTimeout = setTimeout(() => doSend(), 80);
-    }
-
-    async function doSend() {
+    /* ---- API calls ---- */
+    async function fetchStates() {
       try {
-        const res = await fetch(`${API_BASE}/ledValues`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(buildPayload()),
-        });
+        const res  = await fetch('/sistemStates');
         const data = await res.json();
-        if (data.status === "ok") {
-          statusMessage.value = "Connected — values sent";
-          statusClass.value = "ok";
+        ldrValue.value      = data.ldrSensor  ?? 0;
+        alarma.value        = !!data.alarma;
+        lecturaActiva.value = !!data.lecturaActiva;
+        if (data.serialConnected === false) {
+          const detail = data.lastSerialError ? `: ${String(data.lastSerialError)}` : '';
+          statusMessage.value = 'Serial offline (start Wokwi)' + detail;
+          statusClass.value   = 'error';
         } else {
-          const msg = typeof data.error_msg === "string" ? data.error_msg : JSON.stringify(data.error_msg);
-          statusMessage.value = "Error: " + (msg || "unknown");
-          statusClass.value = "error";
+          statusMessage.value = 'Connected';
+          statusClass.value   = 'ok';
         }
       } catch (e) {
-        statusMessage.value = "Connection lost";
-        statusClass.value = "error";
+        statusMessage.value = 'Connection error: ' + String(e);
+        statusClass.value   = 'error';
       }
     }
 
-    function toggleLed13() {
-      led13.value = !led13.value;
-      sendLedValues();
-    }
-
-    async function fetchLdr() {
+    async function toggleLectura() {
       try {
-        const res = await fetch(`${API_BASE}/ldrSensor`);
+        const res  = await fetch('/toggleLectura', { method: 'POST' });
         const data = await res.json();
-        ldrValue.value = data.ldrSensor;
-        if (statusClass.value !== "ok") {
-          statusMessage.value = "Connected";
-          statusClass.value = "ok";
+        if (data.status === 'ok' || data.status === 'comando_enviado') {
+          statusMessage.value = 'Toggle sent';
+          statusClass.value   = 'ok';
+        } else if (data.status === 'error_puerto_cerrado') {
+          statusMessage.value = 'Serial port closed (is Wokwi running?)';
+          statusClass.value   = 'error';
+        } else {
+          statusMessage.value = 'Error: ' + String(data.error_msg || data.status || 'unknown');
+          statusClass.value   = 'error';
         }
-      } catch {
-        statusMessage.value = "Cannot reach server";
-        statusClass.value = "error";
+        /* immediate refresh */
+        await fetchStates();
+      } catch (e) {
+        statusMessage.value = 'Toggle error: ' + String(e);
+        statusClass.value   = 'error';
       }
     }
 
-    // ── Lifecycle ──
+    /* ---- theme ---- */
+    function toggleTheme() {
+      darkMode.value = !darkMode.value;
+      document.documentElement.setAttribute('data-theme', darkMode.value ? 'dark' : 'light');
+      localStorage.setItem('theme', darkMode.value ? 'dark' : 'light');
+    }
+
+    function loadTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved) {
+        darkMode.value = saved === 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    }
+
+    /* ---- lifecycle ---- */
     onMounted(() => {
-      fetchLdr();
-      ldrInterval = setInterval(fetchLdr, 5000);
+      loadTheme();
+      fetchStates();
+      pollTimer = setInterval(fetchStates, 2000);
     });
 
-    onUnmounted(() => clearInterval(ldrInterval));
+    onUnmounted(() => {
+      if (pollTimer) clearInterval(pollTimer);
+    });
 
     return {
-      darkMode,
-      toggleTheme,
-      pwmLeds,
-      led13,
-      ldrValue,
-      statusMessage,
-      statusClass,
-      sensorPercent,
-      sensorRingStyle,
-      sliderTrackStyle,
-      sendLedValues,
-      toggleLed13,
+      ldrValue, alarma, lecturaActiva,
+      sensorPercent, sensorRingStyle,
+      statusMessage, statusClass,
+      darkMode, toggleTheme, toggleLectura
     };
-  },
-}).mount("#app");
+  }
+}).mount('#app');
