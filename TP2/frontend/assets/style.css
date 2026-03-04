@@ -1,0 +1,581 @@
+/* ── Reset & Base ────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── Dark theme (default) ────────────────── */
+[data-theme="dark"] {
+  --bg: #0f0e17;
+  --surface: #1a1830;
+  --surface-hover: #242240;
+  --border: #2d2b42;
+  --text: #fffffe;
+  --text-dim: #94a1b2;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.35);
+  --red: #f43f5e;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --sensor-inner-bg: #0f0e17;
+  --thumb-bg: #fff;
+  --toggle-knob: #fff;
+}
+
+/* ── Light theme ─────────────────────────── */
+[data-theme="light"] {
+  --bg: #f5f3ff;
+  --surface: #ffffff;
+  --surface-hover: #ede9fe;
+  --border: #d4d0e8;
+  --text: #1e1b3a;
+  --text-dim: #6b6894;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.2);
+  --red: #e11d48;
+  --blue: #2563eb;
+  --green: #059669;
+  --sensor-inner-bg: #f5f3ff;
+  --thumb-bg: #fff;
+  --toggle-knob: #fff;
+}
+
+:root {
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  transition: background 0.3s, color 0.3s;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow), transparent);
+}
+
+/* ── Container ───────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* ── Header ──────────────────────────────── */
+header {
+  margin-bottom: 2rem;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+/* ── Theme toggle button ─────────────────── */
+.theme-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.25s;
+  flex-shrink: 0;
+}
+
+.theme-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+/* ── Grid layout for desktop ─────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+/* ── Cards ───────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  transition: border-color 0.2s, background 0.3s;
+}
+
+.card:hover {
+  border-color: var(--accent);
+}
+
+.card h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 1.3rem;
+  color: var(--text-dim);
+}
+
+/* ── Sliders ─────────────────────────────── */
+.slider-group {
+  margin-bottom: 1.5rem;
+}
+
+.slider-group:last-child {
+  margin-bottom: 0;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.slider-header label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.value-badge {
+  display: inline-block;
+  min-width: 46px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  color: #fff;
+}
+
+.slider-track {
+  border-radius: 999px;
+  height: 10px;
+  position: relative;
+}
+
+input.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+
+input.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--thumb-bg);
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  cursor: grab;
+  transition: transform 0.15s;
+}
+
+input.slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  cursor: grabbing;
+}
+
+input.slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--thumb-bg);
+  border: 3px solid var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+  cursor: grab;
+}
+
+/* ── Toggle Button ───────────────────────── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.toggle-label {
+  font-size: 1rem;
+  font-weight: 500;
+  flex: 1;
+}
+
+.toggle-btn {
+  position: relative;
+  width: 76px;
+  height: 38px;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggle-knob {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.toggle-btn.active .toggle-knob {
+  transform: translateX(38px);
+}
+
+.toggle-text {
+  position: absolute;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.8);
+  left: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.toggle-btn.active .toggle-text {
+  opacity: 1;
+}
+
+.led-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.led-indicator.on {
+  background: #facc15;
+  box-shadow: 0 0 10px #facc15, 0 0 24px rgba(250, 204, 21, 0.4);
+}
+
+/* ── Sensor Display ──────────────────────── */
+.sensor-card {
+  text-align: center;
+}
+
+.sensor-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.4rem;
+}
+
+.sensor-ring {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.5s;
+}
+
+.sensor-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  text-shadow: 0 0 12px var(--accent-glow);
+  background: var(--sensor-inner-bg);
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background 0.3s, color 0.3s;
+}
+
+.sensor-unit {
+  position: absolute;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-top: 7rem;
+}
+
+.sensor-bar-container {
+  background: var(--border);
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.7rem;
+  transition: background 0.3s;
+}
+
+.sensor-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), #a78bfa);
+  transition: width 0.6s ease;
+}
+
+.sensor-info {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+/* ── Status Bar ──────────────────────────── */
+.status-bar {
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  margin-top: 1.25rem;
+  transition: all 0.3s;
+}
+
+.status-bar.ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--green);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-bar.error {
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--red);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.status-bar.info {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+/* ── Responsive: Tablet+ (>=640px) ───────── */
+@media (min-width: 640px) {
+  .container {
+    max-width: 800px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+
+  .card {
+    padding: 2rem;
+  }
+
+  .card h2 {
+    font-size: 1.15rem;
+  }
+
+  .slider-header label {
+    font-size: 0.95rem;
+  }
+
+  .slider-track {
+    height: 12px;
+  }
+
+  input.slider {
+    height: 12px;
+  }
+
+  input.slider::-webkit-slider-thumb {
+    width: 26px;
+    height: 26px;
+  }
+
+  input.slider::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+  }
+
+  .sensor-ring {
+    width: 160px;
+    height: 160px;
+  }
+
+  .sensor-value {
+    width: 124px;
+    height: 124px;
+    font-size: 2.5rem;
+  }
+
+  .sensor-unit {
+    margin-top: 8rem;
+  }
+
+  .toggle-label {
+    font-size: 1.1rem;
+  }
+}
+
+/* ── Responsive: Desktop (>=960px) ───────── */
+@media (min-width: 960px) {
+  body {
+    padding: 3rem 2rem;
+  }
+
+  .container {
+    max-width: 1000px;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+  }
+
+  header .subtitle {
+    font-size: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  /* Make the sliders card span full width */
+  .grid .card:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .card {
+    padding: 2.25rem;
+  }
+
+  .card h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .slider-group {
+    margin-bottom: 1.8rem;
+  }
+
+  .slider-header label {
+    font-size: 1rem;
+  }
+
+  .value-badge {
+    font-size: 0.85rem;
+    min-width: 50px;
+    padding: 0.25rem 0.7rem;
+  }
+
+  .sensor-ring {
+    width: 170px;
+    height: 170px;
+  }
+
+  .sensor-value {
+    width: 132px;
+    height: 132px;
+    font-size: 2.6rem;
+  }
+
+  .sensor-unit {
+    margin-top: 8.5rem;
+    font-size: 0.65rem;
+  }
+
+  .sensor-bar-container {
+    height: 8px;
+  }
+
+  .sensor-info {
+    font-size: 0.85rem;
+  }
+
+  .status-bar {
+    font-size: 0.9rem;
+    padding: 0.75rem 1.2rem;
+  }
+
+  .toggle-btn {
+    width: 80px;
+    height: 40px;
+  }
+
+  .toggle-knob {
+    width: 30px;
+    height: 30px;
+  }
+
+  .toggle-btn.active .toggle-knob {
+    transform: translateX(40px);
+  }
+
+  .led-indicator {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ── Responsive: Large desktop (>=1280px) ── */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1100px;
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+  }
+
+  .card {
+    padding: 2.5rem;
+  }
+}
+
+/* ── Small mobile ────────────────────────── */
+@media (max-width: 400px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+
+  .card {
+    padding: 1.2rem;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  header .subtitle {
+    font-size: 0.78rem;
+  }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arduino LED Controller</title>
+  <link rel="stylesheet" href="/assets/style.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="header-top">
+          <div>
+            <h1>Arduino LED Controller</h1>
+            <p class="subtitle">Control your LEDs in real time</p>
+          </div>
+          <button class="theme-btn" @click="toggleTheme" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+            <svg v-if="darkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="grid">
+        <!-- LED Sliders -->
+        <section class="card">
+          <h2>PWM LED Brightness</h2>
+          <div class="slider-group" v-for="led in pwmLeds" :key="led.key">
+            <div class="slider-header">
+              <label>{{ led.label }}</label>
+              <span class="value-badge" :style="{ background: led.color }">{{ led.value }}</span>
+            </div>
+            <div class="slider-track" :style="sliderTrackStyle(led)">
+              <input
+                type="range"
+                min="0"
+                max="255"
+                v-model.number="led.value"
+                @input="sendLedValues"
+                class="slider"
+              />
+            </div>
+          </div>
+        </section>
+
+        <!-- LED 13 Toggle -->
+        <section class="card">
+          <h2>Digital LED</h2>
+          <div class="toggle-row">
+            <span class="toggle-label">LED 13</span>
+            <button
+              class="toggle-btn"
+              :class="{ active: led13 }"
+              @click="toggleLed13"
+            >
+              <span class="toggle-knob"></span>
+              <span class="toggle-text">{{ led13 ? 'ON' : 'OFF' }}</span>
+            </button>
+            <div class="led-indicator" :class="{ on: led13 }"></div>
+          </div>
+        </section>
+
+        <!-- LDR Sensor -->
+        <section class="card sensor-card">
+          <h2>LDR Sensor</h2>
+          <div class="sensor-display">
+            <div class="sensor-ring" :style="sensorRingStyle">
+              <div class="sensor-value">{{ ldrValue }}</div>
+              <div class="sensor-unit">raw</div>
+            </div>
+          </div>
+          <div class="sensor-bar-container">
+            <div class="sensor-bar" :style="{ width: sensorPercent + '%' }"></div>
+          </div>
+          <p class="sensor-info">Updates every 5 seconds &mdash; {{ sensorPercent }}%</p>
+        </section>
+      </div>
+
+      <!-- Status -->
+      <div class="status-bar" :class="statusClass">
+        {{ statusMessage }}
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
