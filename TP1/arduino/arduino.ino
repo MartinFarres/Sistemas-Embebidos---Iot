@@ -57,5 +57,5 @@ void loop()
         }
     }
 
-    delay(100); // wait for a second
+    delay(1000); // wait for a second
 }

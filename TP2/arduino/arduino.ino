@@ -69,8 +69,12 @@ void TaskReadLDR(void *pvParameters)
         if (lecturaActivada == true)
         {
             const int valorLDR_now = analogRead(A3);
+
+            taskENTER_CRITICAL();
             valorLDR = valorLDR_now;
-            if ((valorLDR >= 800) && (alarmaActivada == false))
+            taskEXIT_CRITICAL();
+
+            if ((valorLDR_now >= 800) && (alarmaActivada == false))
             {
                 alarmaActivada = true;
                 // Trata de tomar el semaforo por 5 ticks
@@ -80,13 +84,17 @@ void TaskReadLDR(void *pvParameters)
                     xSemaphoreGive(xSerialSemaphore); // Liberamos el semaforo
                 }
             }
+            else if (valorLDR_now < 800)
+            {
+                alarmaActivada = false;
+            }
         }
         else
         {
             alarmaActivada = false;
         }
 
-        vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
+        vTaskDelay(500 / portTICK_PERIOD_MS); // 50 ms
     }
 }
 
@@ -97,20 +105,26 @@ void TaskSendLDR(void *pvParameters)
     // for loop
     for (;;)
     {
-
-        char bufferLDR[5];
-        int tempVal = valorLDR;
-        bufferLDR[0] = (tempVal / 1000) + '0';
-        bufferLDR[1] = ((tempVal / 100) % 10) + '0';
-        bufferLDR[2] = ((tempVal / 10) % 10) + '0';
-        bufferLDR[3] = (tempVal % 10) + '0';
-        bufferLDR[4] = '\0'; // Fin de cadena
-
-        // Trata de tomar el semaforo por 5 ticks
-        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)5) == pdTRUE)
+        if (lecturaActivada == true)
         {
-            Serial.println(bufferLDR);
-            xSemaphoreGive(xSerialSemaphore); // Liberamos el semaforo
+            char bufferLDR[5];
+
+            taskENTER_CRITICAL();
+            int tempVal = valorLDR;
+            taskEXIT_CRITICAL();
+
+            bufferLDR[0] = (tempVal / 1000) + '0';
+            bufferLDR[1] = ((tempVal / 100) % 10) + '0';
+            bufferLDR[2] = ((tempVal / 10) % 10) + '0';
+            bufferLDR[3] = (tempVal % 10) + '0';
+            bufferLDR[4] = '\0'; // Fin de cadena
+
+            // Trata de tomar el semaforo por 5 ticks
+            if (xSemaphoreTake(xSerialSemaphore, (TickType_t)5) == pdTRUE)
+            {
+                Serial.println(bufferLDR);
+                xSemaphoreGive(xSerialSemaphore); // Liberamos el semaforo
+            }
         }
 
         vTaskDelay(3000 / portTICK_PERIOD_MS); // 3 segundos
@@ -141,7 +155,7 @@ void TaskControlButton(void *pvParameters)
                 xSemaphoreGive(xSerialSemaphore);
             }
 
-            vTaskDelay(200 / portTICK_PERIOD_MS); // 50 ms
+            vTaskDelay(50 / portTICK_PERIOD_MS); // 50 ms
         }
     }
 }
@@ -193,6 +207,7 @@ void TaskAlarm800(void *pvParameters)
         }
     }
 }
+
 void TaskReceiveSerial(void *pvParameters)
 {
     (void)pvParameters;
@@ -213,24 +228,34 @@ void TaskReceiveSerial(void *pvParameters)
             xSemaphoreGive(xSerialSemaphore);
         }
 
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 
 /*---------------------- ISRs ---------------------*/
 void buttonISR()
 {
+    // Variable estática para recordar cuándo fue la última vez que presionamos
+    static unsigned long ultimoTiempoInterrupcion = 0;
+    unsigned long tiempoActual = millis();
 
-    // para saber si al dar el semáforo
-    // despertamos a una tarea mAs importante que la que estaba corriendo.
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-    // damos el semaforo
-    xSemaphoreGiveFromISR(xBotonSemaphore, &xHigherPriorityTaskWoken);
-
-    // Si despertamos a una tarea de mayor prioridad, forzamos un cambio de contexto inmediato
-    if (xHigherPriorityTaskWoken == pdTRUE)
+    // Filtro Anti-rebote: Si pasaron menos de 250ms desde el último toque, lo ignoramos
+    if (tiempoActual - ultimoTiempoInterrupcion > 250)
     {
-        portYIELD_FROM_ISR();
+        // para saber si al dar el semáforo
+        // despertamos a una tarea más importante que la que estaba corriendo.
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+        // damos el semaforo
+        xSemaphoreGiveFromISR(xBotonSemaphore, &xHigherPriorityTaskWoken);
+
+        // Actualizamos el reloj para el próximo toque
+        ultimoTiempoInterrupcion = tiempoActual;
+
+        // Si despertamos a una tarea de mayor prioridad, forzamos un cambio de contexto inmediato
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR();
+        }
     }
 }

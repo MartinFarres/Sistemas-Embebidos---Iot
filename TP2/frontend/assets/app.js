@@ -23,7 +23,7 @@ createApp({
     /* ---- API calls ---- */
     async function fetchStates() {
       try {
-        const res  = await fetch('/sistemStates');
+        const res  = await fetch('/ldrSensor');
         const data = await res.json();
         ldrValue.value      = data.ldrSensor  ?? 0;
         alarma.value        = !!data.alarma;

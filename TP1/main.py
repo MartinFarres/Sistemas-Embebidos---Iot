@@ -58,8 +58,8 @@ shareMem = {
 def get_serial():
     global ser
     if ser is None or not ser.is_open:
-        # ser = serial.Serial('/dev/ttyS1', 9600, timeout=1)
-        ser = serial.serial_for_url('rfc2217://localhost:4000', baudrate=9600, timeout=1)
+        ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+        # ser = serial.serial_for_url('rfc2217://localhost:4000', baudrate=9600, timeout=1)
         # ser = serial.serial_for_url('socket://127.0.0.1:4000', timeout=1)
     return ser
 
@@ -68,11 +68,13 @@ def listening_serial_port():
         try:
             s = get_serial()
             line = s.readline().decode().strip()
-            if line:
-                shareMem["ldrSensor"] = int(line)
+            if line and line.isdigit():
+                valor = int(line) 
+                # if 0 <= valor <= 1023:
+                shareMem["ldrSensor"] = valor
         except Exception:
+            time.sleep(0.5)
             pass
-        time.sleep(0.5)
 
 @app.on_event("startup")
 def startup_event():

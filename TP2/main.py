@@ -44,7 +44,7 @@ def toggle_lectura():
     except Exception as e:
         return {"status": "error", "error_msg": str(e)}
 
-@app.get("/sistemStates")
+@app.get("/ldrSensor")
 def get_estado_sistema():
     return shareMem
 
@@ -62,8 +62,8 @@ def get_serial():
     global ser
     if ser is None or not ser.is_open:
         try:
-            # ser = serial.Serial('/dev/ttyS1', 9600, timeout=1)
-            ser = serial.serial_for_url('rfc2217://localhost:4001', baudrate=9600, timeout=1)
+            ser = serial.Serial('/dev/ttyACM0', 9600, timeout=1)
+            # ser = serial.serial_for_url('rfc2217://localhost:4001', baudrate=9600, timeout=1)
             # ser = serial.serial_for_url('socket://127.0.0.1:4001', timeout=1)
             shareMem["serialConnected"] = True
             shareMem["lastSerialError"] = ""
