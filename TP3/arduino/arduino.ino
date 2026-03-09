@@ -96,23 +96,23 @@ void loop()
 void TaskReceiveSerial(void *pvParameters)
 {
     (void)pvParameters;
-
     bool guardando = false;
 
     for (;;)
     {
         if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE)
         {
-            if (Serial.available() > 0)
+            // CAMBIO VITAL: while en lugar de if para leer todo de golpe
+            while (Serial.available() > 0)
             {
                 char req = Serial.read();
+
                 if (guardando == true)
                 {
                     if (req == '\n')
                     {
                         bufferRx[indice] = '\0';
                         guardando = false;
-                        // llamar a la task interpreter
                         xSemaphoreGive(xInterpreterSemaphore);
                     }
                     else
@@ -121,23 +121,26 @@ void TaskReceiveSerial(void *pvParameters)
                         indice += 1;
                     }
                 }
-                if (req == 'T') // viene el tiempo
+                // Si no estamos guardando números, buscamos los comandos clave
+                else
                 {
-                    indice = 0;
-                    guardando = true;
-                }
-                else if (req == 'L')
-                { // leer tiempo guardado
-                    xSemaphoreGive(xReadSemaphore);
-                }
-                else if (req == 'B')
-                { // borrar EEPROM
-                    xSemaphoreGive(xDeleteSemaphore);
+                    if (req == 'T')
+                    {
+                        indice = 0;
+                        guardando = true;
+                    }
+                    else if (req == 'L')
+                    {
+                        xSemaphoreGive(xReadSemaphore);
+                    }
+                    else if (req == 'B')
+                    {
+                        xSemaphoreGive(xDeleteSemaphore);
+                    }
                 }
             }
             xSemaphoreGive(xSerialSemaphore);
         }
-
         vTaskDelay(50 / portTICK_PERIOD_MS);
     }
 }
@@ -236,24 +239,29 @@ void TaskDeleteEEPROM(void *pvParameters)
 /*---------------------- ISRs ---------------------*/
 void buttonISR()
 {
-    // para saber si al dar el semáforo
-    // despertamos a una tarea mAs importante que la que estaba corriendo.
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    // Escudo Anti-rebote
+    static unsigned long ultimoTiempoInterrupcion = 0;
+    unsigned long tiempoActual = millis();
 
-    if (digitalRead(2) == HIGH)
+    if (tiempoActual - ultimoTiempoInterrupcion > 250)
     {
-        botonPresionado = 2;
-    }
-    else if (digitalRead(3) == HIGH)
-    {
-        botonPresionado = 3;
-    }
-    // damos el semaforo
-    xSemaphoreGiveFromISR(xBotonSemaphore, &xHigherPriorityTaskWoken);
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-    // Si despertamos a una tarea de mayor prioridad, forzamos un cambio de contexto inmediato
-    if (xHigherPriorityTaskWoken == pdTRUE)
-    {
-        portYIELD_FROM_ISR();
+        if (digitalRead(2) == HIGH)
+        {
+            botonPresionado = 2;
+        }
+        else if (digitalRead(3) == HIGH)
+        {
+            botonPresionado = 3;
+        }
+
+        xSemaphoreGiveFromISR(xBotonSemaphore, &xHigherPriorityTaskWoken);
+        ultimoTiempoInterrupcion = tiempoActual;
+
+        if (xHigherPriorityTaskWoken == pdTRUE)
+        {
+            portYIELD_FROM_ISR();
+        }
     }
 }
