@@ -1,0 +1,473 @@
+/* ── Reset & Base ────────────────────────── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ── Dark theme (default) ────────────────── */
+[data-theme="dark"] {
+  --bg: #0f0e17;
+  --surface: #1a1830;
+  --surface-hover: #242240;
+  --border: #2d2b42;
+  --text: #fffffe;
+  --text-dim: #94a1b2;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.35);
+  --red: #f43f5e;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --sensor-inner-bg: #0f0e17;
+  --thumb-bg: #fff;
+  --toggle-knob: #fff;
+}
+
+/* ── Light theme ─────────────────────────── */
+[data-theme="light"] {
+  --bg: #f5f3ff;
+  --surface: #ffffff;
+  --surface-hover: #ede9fe;
+  --border: #d4d0e8;
+  --text: #1e1b3a;
+  --text-dim: #6b6894;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.2);
+  --red: #e11d48;
+  --blue: #2563eb;
+  --green: #059669;
+  --sensor-inner-bg: #f5f3ff;
+  --thumb-bg: #fff;
+  --toggle-knob: #fff;
+}
+
+:root {
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+  transition: background 0.3s, color 0.3s;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--accent-glow), transparent);
+}
+
+/* ── Container ───────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 720px;
+}
+
+/* ── Header ──────────────────────────────── */
+header {
+  margin-bottom: 2rem;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+header .subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-top: 0.2rem;
+}
+
+/* ── Theme toggle button ─────────────────── */
+.theme-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.25s;
+  flex-shrink: 0;
+}
+
+.theme-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+/* ── Grid layout ─────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+/* ── Cards ───────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.75rem;
+  transition: border-color 0.2s, background 0.3s;
+}
+
+.card:hover {
+  border-color: var(--accent);
+}
+
+.card h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 1.3rem;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* ── Action Buttons ──────────────────────── */
+.actions-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn.accent {
+  background: var(--accent);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
+}
+.action-btn.accent:hover:not(:disabled) {
+  background: #5254e0;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.45);
+}
+
+.action-btn.blue {
+  background: var(--blue);
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+}
+.action-btn.blue:hover:not(:disabled) {
+  background: #2563eb;
+  box-shadow: 0 4px 18px rgba(59, 130, 246, 0.45);
+}
+
+.action-btn.red {
+  background: var(--red);
+  box-shadow: 0 2px 12px rgba(244, 63, 94, 0.3);
+}
+.action-btn.red:hover:not(:disabled) {
+  background: #e11d48;
+  box-shadow: 0 4px 18px rgba(244, 63, 94, 0.45);
+}
+
+.action-btn svg {
+  flex-shrink: 0;
+}
+
+/* ── Event Count Badge ───────────────────── */
+.event-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── Empty State ─────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1rem;
+  color: var(--text-dim);
+}
+
+.empty-state svg {
+  opacity: 0.35;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.empty-state span {
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* ── Events Table ────────────────────────── */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+thead th {
+  text-align: left;
+  padding: 0.65rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr {
+  transition: background 0.15s;
+}
+
+tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+tbody td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.row-num {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+  width: 2.5rem;
+  text-align: center;
+}
+
+.event-badge {
+  display: inline-block;
+  padding: 0.2em 0.7em;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.time-cell {
+  font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+  font-size: 0.82rem;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+/* ── Status Bar ──────────────────────────── */
+.status-bar {
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  margin-top: 1.25rem;
+  transition: all 0.3s;
+}
+
+.status-bar.ok {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--green);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-bar.error {
+  background: rgba(244, 63, 94, 0.12);
+  color: var(--red);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.status-bar.info {
+  background: rgba(99, 102, 241, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+/* ── Responsive: Tablet+ (>=640px) ───────── */
+@media (min-width: 640px) {
+  .container {
+    max-width: 800px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+
+  .card {
+    padding: 2rem;
+  }
+
+  .card h2 {
+    font-size: 1.15rem;
+  }
+
+  .actions-row {
+    flex-direction: row;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 0.85rem 1rem;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+}
+
+/* ── Responsive: Desktop (>=960px) ───────── */
+@media (min-width: 960px) {
+  body {
+    padding: 3rem 2rem;
+  }
+
+  .container {
+    max-width: 1000px;
+  }
+
+  header h1 {
+    font-size: 2.2rem;
+  }
+
+  header .subtitle {
+    font-size: 1rem;
+  }
+
+  .card {
+    padding: 2.25rem;
+  }
+
+  .card h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .action-btn {
+    font-size: 0.95rem;
+    padding: 0.9rem 1.2rem;
+  }
+
+  .status-bar {
+    font-size: 0.9rem;
+    padding: 0.75rem 1.2rem;
+  }
+
+  thead th {
+    font-size: 0.82rem;
+    padding: 0.75rem 1rem;
+  }
+
+  tbody td {
+    padding: 0.7rem 1rem;
+  }
+
+  table {
+    font-size: 0.92rem;
+  }
+}
+
+/* ── Responsive: Large desktop (>=1280px) ── */
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1100px;
+  }
+
+  header h1 {
+    font-size: 2.4rem;
+  }
+
+  .card {
+    padding: 2.5rem;
+  }
+}
+
+/* ── Small mobile ────────────────────────── */
+@media (max-width: 400px) {
+  body {
+    padding: 1rem 0.5rem;
+  }
+
+  .card {
+    padding: 1.2rem;
+  }
+
+  header h1 {
+    font-size: 1.3rem;
+  }
+
+  header .subtitle {
+    font-size: 0.78rem;
+  }
+
+  .action-btn {
+    font-size: 0.82rem;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .action-btn span {
+    display: none;
+  }
+
+  thead th {
+    font-size: 0.72rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  tbody td {
+    padding: 0.45rem 0.4rem;
+    font-size: 0.78rem;
+  }
+
+  .time-cell {
+    font-size: 0.72rem;
+  }
+}

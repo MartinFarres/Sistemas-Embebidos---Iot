@@ -56,6 +56,7 @@ def read_EEPROM():
     try:
         s = get_serial()
         if s is not None:
+            shareMem["events"] = []
             # envia marcador 'L' 
             ser.write(b'L\n')
             return {"status": "marcador_lectura_enviado"}
@@ -116,11 +117,13 @@ def listening_serial_port():
                 # puerto serial envia: evento,tiempo\n
                 line_aux = line.split(",")            
                 event = line_aux[0]
-                res_time = time.ctime(int(line_aux[1]))
-                shareMem["events"].append({
-                    "evento": event, 
-                    "hora": res_time
-                })
+                timestamp_crudo = int(line_aux[1])
+                if event != "255" and timestamp_crudo > 0:
+                    res_time = time.ctime(int(line_aux[1]))
+                    shareMem["events"].append({
+                        "evento": event, 
+                        "hora": res_time
+                    })
 
         except Exception as e:
             shareMem["serialConnected"] = False

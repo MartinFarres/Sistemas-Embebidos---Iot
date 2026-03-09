@@ -196,7 +196,7 @@ void TaskReadEEPROM(void *pvParameters)
             long int tiempoGuardado;
             byte eventoGuardado;
 
-            for (int i = 0; i <= posMemDisponible; i += 5)
+            for (int i = 0; i < posMemDisponible; i += 5)
             {
 
                 EEPROM.get(i, tiempoGuardado);

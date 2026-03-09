@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arduino EEPROM Logger</title>
+  <link rel="stylesheet" href="/assets/style.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="header-top">
+          <div>
+            <h1>Arduino EEPROM Logger</h1>
+            <p class="subtitle">TP3 — NTP clock &amp; event history</p>
+          </div>
+          <button class="theme-btn" @click="toggleTheme" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+            <svg v-if="darkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="grid">
+        <!-- Action Buttons -->
+        <section class="card actions-card">
+          <h2>Control Panel</h2>
+          <div class="actions-row">
+            <button class="action-btn accent" @click="updateTime" :disabled="loading">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Actualizar hora NTP</span>
+            </button>
+            <button class="action-btn blue" @click="readEEPROM" :disabled="loading">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>Leer Historial</span>
+            </button>
+            <button class="action-btn red" @click="deleteEEPROM" :disabled="loading">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Borrar Memoria</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Events Table -->
+        <section class="card events-card">
+          <h2>Historial de Eventos <span class="event-count" v-if="events.length">{{ events.length }}</span></h2>
+
+          <div v-if="events.length === 0" class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>No hay eventos registrados</p>
+            <span>Presiona "Leer Historial" para cargar datos de la EEPROM</span>
+          </div>
+
+          <div v-else class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Evento (Boton)</th>
+                  <th>Hora UTC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(ev, i) in events" :key="i">
+                  <td class="row-num">{{ i + 1 }}</td>
+                  <td>
+                    <span class="event-badge">{{ ev.evento }}</span>
+                  </td>
+                  <td class="time-cell">{{ ev.hora }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- Status -->
+      <div class="status-bar" :class="statusClass">
+        {{ statusMessage }}
+      </div>
+    </div>
+  </div>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>
