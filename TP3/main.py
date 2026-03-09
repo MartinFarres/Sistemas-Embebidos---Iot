@@ -26,7 +26,9 @@ app.add_middleware(
 ser = None
 
 shareMem = {
-
+    "events": [],
+    "serialConnected": False,
+    "lastSerialError": "",
 }
 
 
@@ -49,11 +51,35 @@ def update_time():
     except Exception as e:
         return {"status": "error", "error_msg": str(e)}
 
+@app.post("/readEEPROM")
+def read_EEPROM():
+    try:
+        s = get_serial()
+        if s is not None:
+            # envia marcador 'L' 
+            ser.write(b'L\n')
+            return {"status": "marcador_lectura_enviado"}
+        return {"status": "error_puerto_cerrado"}
+    except Exception as e:
+        return {"status": "error", "error_msg": str(e)}
+    
+@app.post("/deleteEEPROM")
+def delete_EEPROM():
+    try:
+        s = get_serial()
+        if s is not None:
+            # envia marcador 'L' 
+            ser.write(b'B\n')
+            shareMem["events"] = []
+            return {"status": "historial_eliminado"}
+        return {"status": "error_puerto_cerrado"}
+    except Exception as e:
+        return {"status": "error", "error_msg": str(e)}
 
 
-@app.get("/sistemStates")
+@app.get("/events")
 def get_estado_sistema():
-    return shareMem
+    return shareMem["events"]
 
 @app.get("/")
 def serve_frontend():
@@ -85,16 +111,17 @@ def listening_serial_port():
         try:
             s = get_serial()
             line = s.readline().decode().strip()
-            if line:
-                if line == "=== LECTURA INICIADA ===":
-                    shareMem["lecturaActiva"] = True
-                elif line == "=== LECTURA DETENIDA ===":
-                    shareMem["lecturaActiva"] = False
-                    shareMem["alarma"] = False 
-                elif line == "=== ALARMA ACTIVADA ===":
-                    shareMem["alarma"] = True
-                elif line.isdigit(): 
-                    shareMem["ldrSensor"] = int(line)
+
+            if line and ',' in line:
+                # puerto serial envia: evento,tiempo\n
+                line_aux = line.split(",")            
+                event = line_aux[0]
+                res_time = time.ctime(int(line_aux[1]))
+                shareMem["events"].append({
+                    "evento": event, 
+                    "hora": res_time
+                })
+
         except Exception as e:
             shareMem["serialConnected"] = False
             shareMem["lastSerialError"] = str(e)
