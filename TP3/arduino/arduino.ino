@@ -193,13 +193,13 @@ void TaskReadEEPROM(void *pvParameters)
     {
         if (xSemaphoreTake(xReadSemaphore, (portMAX_DELAY)) == pdTRUE)
         {
-            long int readTime;
+            long int tiempoGuardado;
             byte eventoGuardado;
 
-            for (i = 0; i <= EEPROM.length(); i += 5)
+            for (int i = 0; i <= posMemDisponible; i += 5)
             {
 
-                EEPROM.get(i, readTime);
+                EEPROM.get(i, tiempoGuardado);
                 EEPROM.get(i + 4, eventoGuardado);
 
                 // enviar por serial
